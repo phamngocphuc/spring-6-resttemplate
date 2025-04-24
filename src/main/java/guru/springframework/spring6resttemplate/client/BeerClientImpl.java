@@ -14,30 +14,43 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.UUID;
 
+/**
+ * Created by PhucPN1.
+ */
 @RequiredArgsConstructor
 @Service
 public class BeerClientImpl implements BeerClient {
 
     private final RestTemplateBuilder restTemplateBuilder;
 
-    private static final String GET_BEER_PATH = "/api/v1/beer";
-    private static final String GET_BEER_BY_ID_PATH = "/api/v1/beer/{beerId}";
+    public static final String GET_BEER_PATH = "/api/v1/beer";
+    public static final String GET_BEER_BY_ID_PATH = "/api/v1/beer/{beerId}";
 
     @Override
-    public BeerDTO getBeerById(UUID beerId) {
+    public void deleteBeer(UUID beerId) {
         RestTemplate restTemplate = restTemplateBuilder.build();
-        return restTemplate.getForObject(GET_BEER_BY_ID_PATH, BeerDTO.class, beerId);
+        restTemplate.delete(GET_BEER_BY_ID_PATH, beerId);
+    }
+
+    @Override
+    public BeerDTO updateBeer(BeerDTO beerDto) {
+        RestTemplate restTemplate = restTemplateBuilder.build();
+        restTemplate.put(GET_BEER_BY_ID_PATH, beerDto, beerDto.getId());
+        return getBeerById(beerDto.getId());
     }
 
     @Override
     public BeerDTO createBeer(BeerDTO newDto) {
         RestTemplate restTemplate = restTemplateBuilder.build();
 
-        ResponseEntity<BeerDTO> response = restTemplate.postForEntity(GET_BEER_PATH, newDto, BeerDTO.class);
         URI uri = restTemplate.postForLocation(GET_BEER_PATH, newDto);
-        System.out.println(uri);
-        System.out.println(uri.getPath());
         return restTemplate.getForObject(uri.getPath(), BeerDTO.class);
+    }
+
+    @Override
+    public BeerDTO getBeerById(UUID beerId) {
+        RestTemplate restTemplate = restTemplateBuilder.build();
+        return restTemplate.getForObject(GET_BEER_BY_ID_PATH, BeerDTO.class, beerId);
     }
 
     @Override
@@ -61,15 +74,15 @@ public class BeerClientImpl implements BeerClient {
         }
 
         if (showInventory != null) {
-            uriComponentsBuilder.queryParam("showInventory", showInventory);
+            uriComponentsBuilder.queryParam("showInventory", beerStyle);
         }
 
         if (pageNumber != null) {
-            uriComponentsBuilder.queryParam("pageNumber", pageNumber);
+            uriComponentsBuilder.queryParam("pageNumber", beerStyle);
         }
 
         if (pageSize != null) {
-            uriComponentsBuilder.queryParam("pageSize", pageSize);
+            uriComponentsBuilder.queryParam("pageSize", beerStyle);
         }
 
 
